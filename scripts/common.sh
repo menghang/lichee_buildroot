@@ -67,12 +67,15 @@ regen_rootfs()
 		fi
 	fi
 
-	if [ "$PLATFORM" != "sun4i_crane" ]; then
+
+	if [ "$PLATFORM" = "sun4i_crane" ]; then
+		echo "Skip Regenerating Rootfs..."
+	elif [ "$PLATFORM" = "sun4i-test" ]; then
+		echo "Skip Regenerating Rootfs..."
+	else
 		echo "Regenerating Rootfs..."
 		(cd ${BR_DIR}; make target-generic-getty-busybox; make target-finalize)
         	(cd ${BR_DIR};  make LICHEE_GEN_ROOTFS=y rootfs-ext4)
-	else
-		echo "Skip Regenerating Rootfs..."
 	fi
 }
 
@@ -108,6 +111,22 @@ gen_output_sun4i-lite()
 gen_output_sun4i-debug()
 {
 	gen_output_generic
+}
+
+gen_output_sun4i-test()
+{
+	if [ ! -d "${OUT_DIR}" ]; then
+		mkdir -pv ${OUT_DIR}
+	fi
+
+	#cp -v ${BR_OUT_DIR}/images/* ${OUT_DIR}/
+	cp -r ${KERN_OUT_DIR}/* ${OUT_DIR}/
+
+	if [ -e ${U_BOOT_DIR}/u-boot.bin ]; then
+		cp -v ${U_BOOT_DIR}/u-boot.bin ${OUT_DIR}/
+	fi
+
+	(cd $BR_DIR/target/test; fakeroot ./create_module_image.sh)
 }
 
 gen_output_sun5i()
@@ -218,6 +237,10 @@ else
                 echo "build uboot for sun5i_a13"
                 cd ${U_BOOT_DIR} && ./build.sh -p sun5i_a13
                 ;;
+        sun4i-test)
+               echo "build uboot for sun4i test"
+               cd ${U_BOOT_DIR} && ./build.sh -p sun4i
+               ;;
         *)
                 echo "build uboot for ${PLATFORM}"
                 cd ${U_BOOT_DIR} && ./build.sh -p ${PLATFORM}
