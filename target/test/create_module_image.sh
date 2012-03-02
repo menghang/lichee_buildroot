@@ -10,17 +10,20 @@ export PATH=$PATH:$BR_ROOT/target/tools/host/usr/bin
 rm -rf modules/
 mkdir modules
 
-NR_SIZE=`du -s $LINUX_ROOT/output/lib/modules|awk '{print $1}'`
-NEW_NR_SIZE=0
-TARGET_IMAGE=modules.ext4
 
-((NEW_NR_SIZE=$NR_SIZE+4096))
+(cd $LINUX_ROOT/output/lib/modules; tar -c *)|gzip > modules/modules.tgz
+
+NR_SIZE=`du -s modules|awk '{print $1}'`
+NEW_NR_SIZE=0
+TARGET_IMAGE=modules.ext2
+
+((NEW_NR_SIZE=$NR_SIZE+512))
 
 
 echo "blocks: $NR_SIZE -> $NEW_NR_SIZE"
-genext2fs -d $LINUX_ROOT/output/lib/modules -b $NEW_NR_SIZE $TARGET_IMAGE
+genext2fs -d modules -m0 -b $NEW_NR_SIZE $TARGET_IMAGE
 
-tune2fs -j -O extents,uninit_bg,dir_index $TARGET_IMAGE
+#tune2fs -j -O extents,uninit_bg,dir_index $TARGET_IMAGE
 
 fsck.ext4 -y $TARGET_IMAGE
 
