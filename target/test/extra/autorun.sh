@@ -135,7 +135,7 @@ dwin &
 inotify-disk /dev &
 sleep 1
 
-infow 12 GSR "Fail"
+infow2 12 1 GSR "Fail"
 
 # IR , Key, Gsensor
 for dev in $(cd /sys/class/input/; ls event*); do
@@ -148,14 +148,18 @@ for dev in $(cd /sys/class/input/; ls event*); do
 		evtest-ir /dev/input/$dev 2>&1 1>/dev/null &
 		;;
 	mma*)
-		infow2 12 5 GSR "$DNAME OK"
+		infow2 12 2 GSR "$DNAME OK"
 		logw "gsensor: `cat /sys/class/input/$dev/device/value`"
 		;;
 	bma*)
-		infow2 12 5 GSR "$DNAME OK"
+		infow2 12 2 GSR "$DNAME OK"
 		logw "gsensor: `cat /sys/class/input/$dev/device/value`"
 		;;
+	*ts)
+		evtest-ts /dev/input/$dev 2>&1 1>/dev/null &
+		;;
 	*)
+		logw "unkown input device name"
 		;;
 	esac
 done
@@ -165,10 +169,15 @@ audio-test.sh 2>&1 1>/dev/null &
 csi-test.sh 2>&1 1>/dev/null &
 wireless-test.sh $IS_USB_WIFI 2>&1 1>/dev/null &
 
+# memory test
 logw "mem testing, please wait..."
 memtester 1M 1
 RESULT=$?
-infow2 0 5 MEM "result $RESULT"
+if [ "$RESULT" -eq 0 ]; then
+	infow2 0 2 MEM "OK"
+else
+	infow2 0 1 MEM "Failed"
+fi
 logw "Memory test result: $RESULT"
 
 
