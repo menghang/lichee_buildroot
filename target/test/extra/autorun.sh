@@ -9,6 +9,13 @@
 #logw "Memory test result: $RESULT"
 
 
+######################################
+#
+#  start GUI
+#
+######################################
+dwin &
+
 insmod /lib/modules/`uname -r`/sun4i-keyboard.ko
 
 CSI_FIRST_TIME=0
@@ -17,28 +24,42 @@ process_csi()
 {
         if [ "$CSI_FIRST_TIME" -eq 0 ]; then
                 insmod /lib/modules/`uname -r`/videobuf-core.ko
+				logw "videobuf-core: insmod: $?"
                 insmod /lib/modules/`uname -r`/videobuf-dma-contig.ko
+				logw "videobuf-dma: insmod: $?"
                 CSI_FIRST_TIME=1
         else
-                echo "CSI: Not first load"
+                logw "CSI: Not first load"
         fi
 
         case $1 in
         csi0_para)
-                CSI0_MOD=`script_list_skey -f /boot/script0.bin -m csi0_para |grep "csi_mname\>"| awk '{print $2}'`
+			CSI0_MOD=`script_list_skey -f /boot/script0.bin -m csi0_para |grep "csi_mname\>"| awk '{print $2}'`
+			CSI0_USED=`script_list_skey -f /boot/script0.bin -m csi0_para |grep "csi_used\>"| awk '{print $2}'`
+			if [ $CSI0_USED -eq 1 ]; then
                 if [ -f /lib/modules/`uname -r`/$CSI0_MOD.ko ]; then
                         echo "Load $CSI0_MOD driver(csi0)"
                         insmod /lib/modules/`uname -r`/$CSI0_MOD.ko
+						logw "insmod $CSI0_MOD: $?"
                 fi
                 insmod /lib/modules/`uname -r`/sun4i_csi0.ko
+				logw "insmod sun4i_csi0: $?"
+				csi0-test.sh &
+			fi
                 ;;
         csi1_para)
-                CSI1_MOD=`script_list_skey -f /boot/script0.bin -m csi1_para |grep "csi_mname\>"| awk '{print $2}'`
+			CSI1_MOD=`script_list_skey -f /boot/script0.bin -m csi1_para |grep "csi_mname\>"| awk '{print $2}'`
+			CSI1_USED=`script_list_skey -f /boot/script0.bin -m csi1_para |grep "csi_used\>"| awk '{print $2}'`
+			if [ $CSI1_USED -eq 1 ]; then
                 if [ -f /lib/modules/`uname -r`/$CSI1_MOD.ko ]; then
                         echo "Load $CSI1_MOD driver(csi1)"
                         insmod /lib/modules/`uname -r`/$CSI1_MOD.ko
+						logw "insmod $CSI0_MOD: $?"
                 fi
                 insmod /lib/modules/`uname -r`/sun4i_csi1.ko
+				logw "insmod sun4i_csi1: $?"
+				csi1-test.sh &
+			fi
                 ;;
         esac
 
@@ -48,7 +69,7 @@ IS_USB_WIFI=0
 
 do_usb_wifi()
 {
-        echo "usb_wifi"
+	logw "usb_wifi"
 	insmod /lib/modules/`uname -r`/8192cu.ko
 	IS_USB_WIFI=1
 }
@@ -56,7 +77,7 @@ do_usb_wifi()
 
 do_sdio_wifi()
 {
-        echo "sdio_wifi"
+	logw "sdio_wifi"
 	IS_USB_WIFI=0
 }
 
@@ -65,29 +86,35 @@ for mod in $(script_list_mkey -f /boot/script0.bin); do
 case $mod in
 ir_para)
         insmod /lib/modules/`uname -r`/sun4i-ir.ko
+		logw "ir_para insmod $?"
         ;;
 dram_para)
         DRM_CLK=`script_list_skey -f /boot/script0.bin -m dram_para |grep dram_clk |awk '{print $2}'`
+		logw "dram clock: $DRM_CLK"
         ;;
 ctp_para)
         CTP_NAME=`script_list_skey -f /boot/script0.bin -m ctp_para |grep ctp_name| awk '{print $2}'`
         case $CTP_NAME in
         Goodix-TS)
                 insmod /lib/modules/`uname -r`/goodix_touch.ko
+				logw "Goodix-TS insmod $?"
                 ;;
         ft5x_ts)
                 insmod /lib/modules/`uname -r`/ft5x_ts.ko
+				logw "ft5x_ts insmod $?"
                 ;;
         *)
-                echo "Unsupported CTP detected"
+                logw "Unsupported CTP detected: $CTP_NAME"
                 ;;
         esac
         ;;
 rtp_para)
 	insmod /lib/modules/`uname -r`/sun4i-ts.ko
+	logw "rtp insmod $?"
         ;;
 motor_para)
 	insmod /lib/modules/`uname -r`/sun4i-vibrator.ko
+	logw "motor insmod $?"
         ;;
 csi[01]_para)
         process_csi $mod
@@ -101,6 +128,7 @@ sdio_wifi_para)
 gsensor_para)
 	GS_NAME=`script_list_skey -f /boot/script0.bin -m gsensor_para |grep gsensor_name| awk '{print $2}'`
 	insmod /lib/modules/`uname -r`/$GS_NAME.ko
+	logw "insmod $GS_NAME $?"
 	;;
 
 esac
@@ -113,25 +141,23 @@ for dev in $(cd /sys/class/input/; ls event*); do
 	case $DNAME in
 	ft5x_ts)
 		export TSLIB_TSDEVICE=/dev/input/$dev
+		logw "input: ft5x_ts"
 		;;
 	Goodix-TS)
 		export TSLIB_TSDEVICE=/dev/input/$dev
+		logw "input: Goodix_TS"
 		;;
 	sun4i-ts)
 		export TSLIB_TSDEVICE=/dev/input/$dev
+		logw "input: sun4i-ts"
 		ts_calibrate
 		;;
 	*)
+		logw "input: unkown ts $DNAME"
 		;;
         esac
 done
 
-######################################
-#
-#  start GUI
-#
-######################################
-dwin &
 inotify-disk /dev &
 sleep 1
 
@@ -159,14 +185,13 @@ for dev in $(cd /sys/class/input/; ls event*); do
 		evtest-ts /dev/input/$dev 2>&1 1>/dev/null &
 		;;
 	*)
-		logw "unkown input device name"
+		logw "unkown input device name: $DNAME"
 		;;
 	esac
 done
 
 misc 2>&1 1>/dev/null &
 audio-test.sh 2>&1 1>/dev/null &
-csi-test.sh 2>&1 1>/dev/null &
 wireless-test.sh $IS_USB_WIFI 2>&1 1>/dev/null &
 
 # memory test

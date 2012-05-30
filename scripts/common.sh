@@ -93,9 +93,8 @@ gen_output_generic()
 	cp -v ${BR_OUT_DIR}/images/* ${OUT_DIR}/
 	cp -r ${KERN_OUT_DIR}/* ${OUT_DIR}/
 
-	if [ -e ${U_BOOT_DIR}/u-boot.bin ]; then
-		cp -v ${U_BOOT_DIR}/u-boot.bin ${OUT_DIR}/
-	fi
+	cp -v ${U_BOOT_DIR}/u-boot.bin ${OUT_DIR}/
+	cp -v ${U_BOOT_DIR}/u-boot-mmc.bin ${OUT_DIR}/
 }
 
 gen_output_sun4i()
@@ -122,9 +121,8 @@ gen_output_sun4i-test()
 	#cp -v ${BR_OUT_DIR}/images/* ${OUT_DIR}/
 	cp -r ${KERN_OUT_DIR}/* ${OUT_DIR}/
 
-	if [ -e ${U_BOOT_DIR}/u-boot.bin ]; then
-		cp -v ${U_BOOT_DIR}/u-boot.bin ${OUT_DIR}/
-	fi
+	cp -v ${U_BOOT_DIR}/u-boot.bin ${OUT_DIR}/
+	cp -v ${U_BOOT_DIR}/u-boot-mmc.bin ${OUT_DIR}/
 
 	(cd $BR_DIR/target/test; fakeroot ./create_module_image.sh)
 }
@@ -158,9 +156,8 @@ gen_output_sun4i_crane()
 	mkdir -p ${OUT_DIR}/android/toolchain/
 	cp ${BR_DIR}/dl/arm-2010.09-50-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2 ${OUT_DIR}/android/toolchain/
 
-	if [ -e ${U_BOOT_DIR}/u-boot.bin ]; then
-		cp -v ${U_BOOT_DIR}/u-boot.bin ${OUT_DIR}/android
-	fi
+	cp -v ${U_BOOT_DIR}/u-boot.bin ${OUT_DIR}/
+	cp -v ${U_BOOT_DIR}/u-boot-mmc.bin ${OUT_DIR}/
 }
 
 clean_output()
@@ -231,19 +228,19 @@ else
 	case ${PLATFORM} in
         a12*)
                 echo "build uboot for sun5i_a12"
-                cd ${U_BOOT_DIR} && ./build.sh -p sun5i_a12
+                #cd ${U_BOOT_DIR} && ./build.sh -p sun5i_a12
                 ;;
         a13*)
                 echo "build uboot for sun5i_a13"
-                cd ${U_BOOT_DIR} && ./build.sh -p sun5i_a13
+                #cd ${U_BOOT_DIR} && ./build.sh -p sun5i_a13
                 ;;
         sun4i-test)
                echo "build uboot for sun4i test"
-               cd ${U_BOOT_DIR} && ./build.sh -p sun4i
+               #cd ${U_BOOT_DIR} && ./build.sh -p sun4i
                ;;
         *)
                 echo "build uboot for ${PLATFORM}"
-                cd ${U_BOOT_DIR} && ./build.sh -p ${PLATFORM}
+                #cd ${U_BOOT_DIR} && ./build.sh -p ${PLATFORM}
                 ;;
         esac
 

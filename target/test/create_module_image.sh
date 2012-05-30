@@ -17,15 +17,14 @@ NR_SIZE=`du -s modules|awk '{print $1}'`
 NEW_NR_SIZE=0
 TARGET_IMAGE=modules.ext2
 
-((NEW_NR_SIZE=$NR_SIZE+512))
+#((NEW_NR_SIZE=$NR_SIZE+512))
+((NEW_NR_SIZE=$NR_SIZE*12/10))
 
 
 echo "blocks: $NR_SIZE -> $NEW_NR_SIZE"
-genext2fs -d modules -m0 -b $NEW_NR_SIZE $TARGET_IMAGE
+genext2fs -d modules -b $NEW_NR_SIZE $TARGET_IMAGE
 
-#tune2fs -j -O extents,uninit_bg,dir_index $TARGET_IMAGE
+tune2fs -j -O extents,uninit_bg,dir_index $TARGET_IMAGE
 
 fsck.ext4 -y $TARGET_IMAGE
-
-
-
+echo $? > /dev/null
