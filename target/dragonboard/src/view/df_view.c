@@ -40,7 +40,7 @@
 
 #define AUTO_MENU_NAME                  "自动测试项"
 #define MANUAL_MENU_NAME                "手动测试项"
-#define COPYRIGHT                       "DragonBoard V1.0.0 Copyright (C) 2012 Allwinner"
+#define COPYRIGHT                       "DragonBoard V1.2.0 Copyright (C) 2012 Allwinner"
 #define CLEAR_BUTTON_NAME               "清屏"
 
 IDirectFB              *dfb;

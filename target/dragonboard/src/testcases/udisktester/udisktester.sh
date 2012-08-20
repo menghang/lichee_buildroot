@@ -5,7 +5,8 @@ source send_cmd_pipe.sh
 while true; do
     for nr in a b c d e f g h i j k l m n o p q r s t u v w x y z; do
         udisk="/dev/sd$nr"
-        udiskp=$udisk"1"
+        #udiskp=$udisk"1"
+        udiskp=$udisk
     
         while true; do
             while true; do

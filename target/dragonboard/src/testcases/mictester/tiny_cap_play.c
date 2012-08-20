@@ -26,6 +26,10 @@
 ** DAMAGE.
 */
 
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <string.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,6 +77,21 @@ void sigint_handler(int sig)
     capturing = 0;
 }
 
+void pa_open(void)
+{
+    int fd;
+    char *path = "/dev/pa_dev";
+
+    fd = open(path, O_RDWR | O_NONBLOCK);
+    if (fd < 0) {
+        db_error("cannot open %s(%s)\n", path, strerror(errno));
+        return;
+    }
+
+    ioctl(fd, 200, 0);
+    close(fd);
+}
+
 int main(int argc, char **argv)
 {
     struct wav_header header;
@@ -84,6 +103,7 @@ int main(int argc, char **argv)
     unsigned int bits = 16;
     //unsigned int frames;
     int delay;
+    int volume;
 
     INIT_CMD_PIPE();
     init_script(atoi(argv[2]));
@@ -97,6 +117,8 @@ int main(int argc, char **argv)
     else if (delay > 0) {
         sleep(delay);
     }
+
+    pa_open();
 
     header.riff_id = ID_RIFF;
     header.riff_sz = 0;
@@ -117,6 +139,12 @@ int main(int argc, char **argv)
         goto out;
     }
 	
+    if (script_fetch("mic", "volume", &volume, 1) || 
+            volume < 0) {
+        volume = 40;
+    }
+	tinymix_set_value(mixer, 0, volume);
+
 	tinymix_set_value(mixer, 1, 1);//pamut Enable
 	tinymix_set_value(mixer, 2, 1);//Mixpas Enable   	
 	tinymix_set_value(mixer, 4, 12);//Mic1RS Enable               

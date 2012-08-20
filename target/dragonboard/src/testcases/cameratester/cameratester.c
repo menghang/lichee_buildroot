@@ -253,7 +253,7 @@ int video_mainloop(void)
     parms.parm.capture.timeperframe.denominator = fps;
     if (ioctl(fd, VIDIOC_S_PARM, &parms) == -1) {
         db_error("set frequence failed\n");
-        goto err;
+        //goto err;
     }
 
     /* request buffer */

@@ -13,6 +13,6 @@
 #ifndef __VERSION_H__
 #define __VERSION_H__
 
-#define DRAGONBOARD_VERSION             0x00010000
+#define DRAGONBOARD_VERSION             0x00010200
 
 #endif /* __VERSION_H__ */

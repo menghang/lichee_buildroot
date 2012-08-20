@@ -6,6 +6,7 @@ source script_parser.sh
 mkfs.vfat /dev/nanda
 if [ $? -ne 0 ]; then
     SEND_CMD_PIPE_FAIL $3
+    exit 1
 fi
 echo "create vfat file system for /dev/nanda done"
 
@@ -16,6 +17,7 @@ fi
 mount /dev/nanda /tmp/nanda
 if [ $? -ne 0 ]; then
     SEND_CMD_PIPE_FAIL $3
+    exit 1
 fi
 echo "mount /dev/nanda to /tmp/nanda OK"
 
